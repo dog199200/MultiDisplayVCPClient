@@ -1,0 +1,11 @@
+﻿{
+  "type": "Plugin",
+  "name": "Multi-Display VCP Client",
+  "author": "DoggoDogPack",
+  "repository": "https://github.com/dog199200/MultiDisplayVCPClient",
+  "packageId": "DoggoDogPack.MultiDisplayVCPClient",
+  "version": "1.0.1",
+  "target-plugin-api-version": 40,
+  "target-macro-deck-version": "2.14.1",
+  "dll": "MultiDisplayVCPClient.dll"
+}
