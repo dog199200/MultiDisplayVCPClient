@@ -30,11 +30,7 @@ namespace MultiDisplayVCPClient.GUI
             this.btnToggle = new SuchByte.MacroDeck.GUI.CustomControls.ButtonPrimary();
             this.lblStatus = new System.Windows.Forms.Label();
             this.pbRefresh = new System.Windows.Forms.PictureBox();
-
-            // --- ADD THIS ---
             this.separatorPanel = new System.Windows.Forms.Panel();
-            // --- END ADD ---
-
             ((System.ComponentModel.ISupportInitialize)(this.pbRefresh)).BeginInit();
             this.SuspendLayout();
             // 
@@ -95,7 +91,6 @@ namespace MultiDisplayVCPClient.GUI
             this.pbRefresh.TabIndex = 2;
             this.pbRefresh.TabStop = false;
             // 
-            // --- ADD THIS ---
             // separatorPanel
             // 
             this.separatorPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
@@ -104,7 +99,6 @@ namespace MultiDisplayVCPClient.GUI
             this.separatorPanel.Name = "separatorPanel";
             this.separatorPanel.Size = new System.Drawing.Size(337, 1);
             this.separatorPanel.TabIndex = 3;
-            // --- END ADD ---
             // 
             // VcpConnectionToggler
             // 
@@ -112,22 +106,14 @@ namespace MultiDisplayVCPClient.GUI
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = false;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(45)))), ((int)(((byte)(45)))));
-
-            // --- ADD THIS ---
             this.Controls.Add(this.separatorPanel);
-            // --- END ADD ---
-
             this.Controls.Add(this.pbRefresh);
             this.Controls.Add(this.lblStatus);
             this.Controls.Add(this.btnToggle);
             this.Controls.Add(this.lblName);
             this.Margin = new System.Windows.Forms.Padding(0, 2, 0, 2);
             this.Name = "VcpConnectionToggler";
-
-            // --- MODIFIED ---
-            this.Size = new System.Drawing.Size(337, 37); // Was 35
-            // --- END MODIFIED ---
-
+            this.Size = new System.Drawing.Size(337, 37);
             ((System.ComponentModel.ISupportInitialize)(this.pbRefresh)).EndInit();
             this.ResumeLayout(false);
 
@@ -139,9 +125,6 @@ namespace MultiDisplayVCPClient.GUI
         private ButtonPrimary btnToggle;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.PictureBox pbRefresh;
-
-        // --- ADD THIS ---
         private System.Windows.Forms.Panel separatorPanel;
-        // --- END ADD ---
     }
 }

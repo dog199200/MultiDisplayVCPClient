@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "MultiDisplayVCPClient/1.0.1": {
+      "MultiDisplayVCPClient/1.1.0": {
         "runtime": {
           "MultiDisplayVCPClient.dll": {}
         }
@@ -14,7 +14,7 @@
     }
   },
   "libraries": {
-    "MultiDisplayVCPClient/1.0.1": {
+    "MultiDisplayVCPClient/1.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

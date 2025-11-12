@@ -1,22 +1,29 @@
 ﻿using SuchByte.MacroDeck.GUI;
-using System;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace MultiDisplayVCPClient.GUI.Controls
 {
-    // This is the base class from ObsSelectorButton.cs
+    /// <summary>
+    /// A base picture box control that adds selection and notification painting.
+    /// </summary>
     public class VcpContentButton : PictureBox
     {
         private bool _notification;
         private bool _selected;
 
+        /// <summary>
+        /// Sets the notification dot visibility on the control.
+        /// </summary>
         public void SetNotification(bool notification)
         {
             _notification = notification;
             Invalidate();
         }
 
+        /// <summary>
+        /// Gets or sets whether the control is in a selected state.
+        /// </summary>
         public bool Selected
         {
             get => _selected;
@@ -27,6 +34,9 @@ namespace MultiDisplayVCPClient.GUI.Controls
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the VcpContentButton.
+        /// </summary>
         public VcpContentButton()
         {
             DoubleBuffered = true;
@@ -43,16 +53,25 @@ namespace MultiDisplayVCPClient.GUI.Controls
             MouseLeave += MouseLeaveEvent;
         }
 
-        private void MouseEnterEvent(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the MouseEnter event to trigger a repaint.
+        /// </summary>
+        private void MouseEnterEvent(object? sender, EventArgs e)
         {
             Invalidate();
         }
 
-        private void MouseLeaveEvent(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the MouseLeave event to trigger a repaint.
+        /// </summary>
+        private void MouseLeaveEvent(object? sender, EventArgs e)
         {
             Invalidate();
         }
 
+        /// <summary>
+        /// Custom painting logic for notifications and selection highlights.
+        /// </summary>
         protected override void OnPaint(PaintEventArgs pe)
         {
             base.OnPaint(pe);
@@ -71,18 +90,38 @@ namespace MultiDisplayVCPClient.GUI.Controls
         }
     }
 
-    // This is our new button class, inheriting from the one above
+    /// <summary>
+    /// A specialized VcpContentButton that adds a text-based alert indicator.
+    /// </summary>
     public partial class VcpSelectorButton : VcpContentButton
     {
+        /// <summary>
+        /// The text to display in the alert circle (e.g., "1").
+        /// </summary>
         public string AlertText { get; set; }
+
+        /// <summary>
+        /// The background color of the alert circle.
+        /// </summary>
         public Color AlertBackgroundColor { get; set; } = Color.CornflowerBlue;
+
+        /// <summary>
+        /// The foreground color of the alert text.
+        /// </summary>
         public Color AlertForeColor { get; set; } = Color.White;
 
+        /// <summary>
+        /// Initializes a new instance of the VcpSelectorButton.
+        /// </summary>
         public VcpSelectorButton()
         {
             InitializeComponent();
+            AlertText = string.Empty;
         }
 
+        /// <summary>
+        /// Custom painting logic to draw the alert circle and text.
+        /// </summary>
         protected override void OnPaint(PaintEventArgs pe)
         {
             base.OnPaint(pe);
@@ -97,8 +136,8 @@ namespace MultiDisplayVCPClient.GUI.Controls
 
             using var indicatorBrush = new SolidBrush(AlertBackgroundColor);
             pe.Graphics.FillEllipse(indicatorBrush, indicatorRectangle);
-            var brush = new SolidBrush(AlertForeColor);
-            var format = new StringFormat
+            using var brush = new SolidBrush(AlertForeColor);
+            using var format = new StringFormat
             {
                 Alignment = StringAlignment.Center,
                 LineAlignment = StringAlignment.Center,

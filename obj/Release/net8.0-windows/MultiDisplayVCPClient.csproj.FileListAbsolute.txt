@@ -1,8 +1,3 @@
-E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\ExtensionManifest.json
-E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\ExtensionIcon.png
-E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\MultiDisplayVCPClient.deps.json
-E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\MultiDisplayVCPClient.dll
-E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\MultiDisplayVCPClient.pdb
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.csproj.AssemblyReference.cache
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.GUI.Controls.VcpContentButton.resources
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.GUI.VcpConnectionConfigurator.resources
@@ -14,7 +9,14 @@ E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.AssemblyInfoInputs.cache
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.AssemblyInfo.cs
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.csproj.CoreCompileInputs.cache
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\ExtensionManifest.json
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\ExtensionIcon.png
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\MultiDisplayVCPClient.deps.json
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\MultiDisplayVCPClient.dll
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\bin\Release\net8.0-windows\MultiDisplayVCPClient.pdb
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.dll
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\refint\MultiDisplayVCPClient.dll
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.pdb
 E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\ref\MultiDisplayVCPClient.dll
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.GUI.ConnectionEditorForm.resources
+E:\Projects\MultiConnectionMonitorClient\MultiDisplayVCPClient\obj\Release\net8.0-windows\MultiDisplayVCPClient.GUI.ConnectionIconControl.resources

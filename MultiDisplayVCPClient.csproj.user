@@ -5,6 +5,12 @@
     <Compile Update="Actions\SetVcpActionConfigControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="GUI\ConnectionEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="GUI\ConnectionIconControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="GUI\Controls\VcpSelectorButton.cs">
       <SubType>Component</SubType>
     </Compile>

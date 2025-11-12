@@ -6,6 +6,10 @@
 
         #region Component Designer generated code
 
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
@@ -45,9 +49,8 @@
             this.comboConnections.SelectedItem = null;
             this.comboConnections.Size = new System.Drawing.Size(320, 29);
             this.comboConnections.TabIndex = 1;
-            this.comboConnections.SelectedIndexChanged += new System.EventHandler(this.comboConnections_SelectedIndexChanged);
-            this.comboConnections.Enter += new System.EventHandler(this.comboConnections_Enter);
-
+            this.comboConnections.SelectedIndexChanged += new System.EventHandler(this.OnConnectionSelected);
+            this.comboConnections.Enter += new System.EventHandler(this.OnConnectionsEnter);
             // 
             // lblMonitor
             // 
@@ -73,8 +76,8 @@
             this.comboMonitors.SelectedItem = null;
             this.comboMonitors.Size = new System.Drawing.Size(320, 29);
             this.comboMonitors.TabIndex = 3;
-            this.comboMonitors.SelectedIndexChanged += new System.EventHandler(this.comboMonitors_SelectedIndexChanged);
-            this.comboMonitors.Enter += new System.EventHandler(this.comboMonitors_Enter);
+            this.comboMonitors.SelectedIndexChanged += new System.EventHandler(this.OnMonitorSelected);
+            this.comboMonitors.Enter += new System.EventHandler(this.OnMonitorsEnter);
             // 
             // lblSetting
             // 
@@ -100,8 +103,8 @@
             this.comboSettings.SelectedItem = null;
             this.comboSettings.Size = new System.Drawing.Size(320, 29);
             this.comboSettings.TabIndex = 5;
-            this.comboSettings.SelectedIndexChanged += new System.EventHandler(this.comboSettings_SelectedIndexChanged);
-            this.comboSettings.Enter += new System.EventHandler(this.comboSettings_Enter);
+            this.comboSettings.SelectedIndexChanged += new System.EventHandler(this.OnSettingSelected);
+            this.comboSettings.Enter += new System.EventHandler(this.OnSettingsEnter);
             // 
             // lblValue
             // 
@@ -123,7 +126,8 @@
             this.numericValue.Name = "numericValue";
             this.numericValue.Size = new System.Drawing.Size(120, 27);
             this.numericValue.TabIndex = 7;
-            this.numericValue.ValueChanged += new System.EventHandler(this.Value_Changed);
+            // --- FIX: RENAMED EVENT HANDLER ---
+            this.numericValue.ValueChanged += new System.EventHandler(this.OnValueChanged);
             // 
             // toolTip1
             // 
@@ -147,12 +151,12 @@
             this.Controls.Add(this.lblConnection);
             this.Name = "SetVcpActionConfigControl";
             this.Size = new System.Drawing.Size(500, 200);
-            this.Load += new System.EventHandler(this.SetVcpActionConfigControl_Load);
+            this.Load += new System.EventHandler(this.OnLoad);
             ((System.ComponentModel.ISupportInitialize)(this.numericValue)).EndInit();
             this.ResumeLayout(false);
         }
 
-        #endregion
+#endregion
 
         private System.Windows.Forms.Label lblConnection;
         private SuchByte.MacroDeck.GUI.CustomControls.RoundedComboBox comboConnections;

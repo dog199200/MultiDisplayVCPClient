@@ -5,7 +5,7 @@
   },
   "projects": {
     "E:\\Projects\\MultiConnectionMonitorClient\\MultiDisplayVCPClient\\MultiDisplayVCPClient.csproj": {
-      "version": "1.0.1",
+      "version": "1.1.0",
       "restore": {
         "projectUniqueName": "E:\\Projects\\MultiConnectionMonitorClient\\MultiDisplayVCPClient\\MultiDisplayVCPClient.csproj",
         "projectName": "DoggoDogPack.MultiDisplayVCPClient",

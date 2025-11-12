@@ -16,8 +16,6 @@ namespace MultiDisplayVCPClient.GUI
             base.Dispose(disposing);
         }
 
-        #region Component Designer generated code
-
         private void InitializeComponent()
         {
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
@@ -30,12 +28,7 @@ namespace MultiDisplayVCPClient.GUI
             // 
             this.flowLayoutPanel1.AutoScroll = true;
             this.flowLayoutPanel1.AutoSize = false;
-
-            // --- MODIFICATION 1 ---
-            // Removed the border from the inner panel
             this.flowLayoutPanel1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            // --- END MODIFICATION ---
-
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanel1.Location = new System.Drawing.Point(3, 3);
@@ -69,12 +62,7 @@ namespace MultiDisplayVCPClient.GUI
             // 
             this.mainLayout.AutoSize = true;
             this.mainLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-
-            // --- MODIFICATION 2 ---
-            // Added the border to the outer panel
             this.mainLayout.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            // --- END MODIFICATION ---
-
             this.mainLayout.ColumnCount = 1;
             this.mainLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.mainLayout.Controls.Add(this.flowLayoutPanel1, 0, 0);
@@ -107,8 +95,6 @@ namespace MultiDisplayVCPClient.GUI
             this.PerformLayout();
 
         }
-
-        #endregion
 
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.TableLayoutPanel mainLayout;

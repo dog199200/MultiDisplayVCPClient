@@ -1,15 +1,20 @@
-﻿using SuchByte.MacroDeck.Logging;
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace MultiDisplayVCPClient.GUI
 {
+    /// <summary>
+    /// A user control that displays the state of a VcpClient
+    /// and provides buttons to connect/disconnect and refresh.
+    /// </summary>
     public partial class VcpConnectionToggler : UserControl
     {
-        private VcpClient _client;
+        private readonly VcpClient _client;
+
+        /// <summary>
+        /// Gets the VcpClient associated with this control.
+        /// </summary>
         public VcpClient Client => _client;
 
         private readonly Image _refreshIcon;
@@ -19,6 +24,10 @@ namespace MultiDisplayVCPClient.GUI
         private readonly Color _colorGrey = Color.FromArgb(65, 65, 65);
         private readonly Color _colorWhite = Color.White;
 
+        /// <summary>
+        /// Initializes a new instance of the VcpConnectionToggler control.
+        /// </summary>
+        /// <param name="client">The VcpClient to bind to this control.</param>
         public VcpConnectionToggler(VcpClient client)
         {
             InitializeComponent();
@@ -38,38 +47,45 @@ namespace MultiDisplayVCPClient.GUI
             UpdateUI(_client.State);
         }
 
-        // --- THIS IS THE FIX ---
-        // Renamed FetchAndCacheAsync to FetchAndUpdateVariablesAsync
-        private async void OnRefreshClick(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the Click event for the 'Refresh' button.
+        /// Manually triggers a full data fetch from the server.
+        /// </summary>
+        private async void OnRefreshClick(object? sender, EventArgs e)
         {
             SetControlsEnabled(false, isRefreshing: true);
             pbRefresh.Image = _refreshingIcon;
 
             try
             {
-                // This is the "slow" fetch
-                await PluginInstance.Main.FetchAndUpdateVariablesAsync(_client); // <-- RENAMED
+                await PluginInstance.Main.FetchAndUpdateVariablesAsync(_client);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MacroDeckLogger.Warning(PluginInstance.Main, $"({_client.Name}) Manual refresh failed: {ex.Message}");
+                // Fail silently
             }
             finally
             {
-                this.InvokeIfRequired(() => {
+                this.InvokeIfRequired(() =>
+                {
                     pbRefresh.Image = _refreshIcon;
                     UpdateUI(_client.State);
                 });
             }
         }
-        // --- END FIX ---
 
-        private void OnConnectionStateChanged(object sender, ConnectionState newState)
+        /// <summary>
+        /// Handles the ConnectionStateChanged event from the VcpClient.
+        /// </summary>
+        private void OnConnectionStateChanged(object? sender, ConnectionState newState)
         {
             this.InvokeIfRequired(() => UpdateUI(newState));
         }
 
-        private async void OnToggleClick(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the Click event for the 'Connect' / 'Disconnect' button.
+        /// </summary>
+        private async void OnToggleClick(object? sender, EventArgs e)
         {
             if (_client.State == ConnectionState.Connecting) return;
 
@@ -77,13 +93,15 @@ namespace MultiDisplayVCPClient.GUI
             {
                 _client.Disconnect();
             }
-            else // It's Offline
+            else
             {
-                // This is the "fast" connect + "slow" background fetch
                 await PluginInstance.Main.ConnectAndFetchInBackground(_client);
             }
         }
 
+        /// <summary>
+        /// Enables or disables the UI controls based on the client's state.
+        /// </summary>
         private void SetControlsEnabled(bool isEnabled, bool isConnecting = false, bool isRefreshing = false)
         {
             btnToggle.Enabled = isEnabled;
@@ -97,6 +115,10 @@ namespace MultiDisplayVCPClient.GUI
             }
         }
 
+        /// <summary>
+        /// Updates all UI elements (labels, buttons) to reflect the given connection state.
+        /// </summary>
+        /// <param name="state">The new ConnectionState to display.</param>
         private void UpdateUI(ConnectionState state)
         {
             switch (state)
@@ -129,6 +151,23 @@ namespace MultiDisplayVCPClient.GUI
                     pbRefresh.Image = _refreshingIcon;
                     break;
             }
+        }
+
+        /// <summary>
+        /// Compares this instance to another object for equality.
+        /// </summary>
+        public override bool Equals(object? obj)
+        {
+            return obj is VcpConnectionToggler toggler &&
+                   EqualityComparer<VcpClient>.Default.Equals(_client, toggler._client);
+        }
+
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_client);
         }
     }
 }

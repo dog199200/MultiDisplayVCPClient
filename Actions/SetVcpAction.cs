@@ -2,42 +2,52 @@
 using SuchByte.MacroDeck.GUI;
 using SuchByte.MacroDeck.GUI.CustomControls;
 using SuchByte.MacroDeck.Plugins;
-using System;
-using System.Linq;
-using System.Text.Json;
 using SuchByte.MacroDeck.Variables;
-using SuchByte.MacroDeck.Logging;
+using System.Text.Json;
 
 namespace MultiDisplayVCPClient.Actions
 {
+    /// <summary>
+    /// This class implements the "Set VCP Value" action for MacroDeck.
+    /// </summary>
     public class SetVcpAction : PluginAction
     {
+        /// <summary>
+        /// The display name of the action.
+        /// </summary>
         public override string Name => "Set VCP Value";
+
+        /// <summary>
+        /// A short description of what the action does.
+        /// </summary>
         public override string Description => "Sets a VCP value (e.g., Brightness, Input) on a monitor.";
+
+        /// <summary>
+        /// Indicates that this action is configurable.
+        /// </summary>
         public override bool CanConfigure => true;
 
-        // --- THIS METHOD IS UPDATED ---
+        /// <summary>
+        /// Called when the action is executed by MacroDeck.
+        /// </summary>
+        /// <param name="clientId">The client ID that triggered the action (if any).</param>
+        /// <param name="actionButton">The action button instance that was pressed.</param>
         public override void Trigger(string clientId, ActionButton actionButton)
         {
             try
             {
-                var config = JsonSerializer.Deserialize<SetVcpActionConfig>(this.Configuration);
+                if (string.IsNullOrEmpty(this.Configuration)) return;
+                SetVcpActionConfig? config = JsonSerializer.Deserialize<SetVcpActionConfig>(this.Configuration);
                 if (config == null || string.IsNullOrEmpty(config.ConnectionName)) return;
 
-                // 1. Find the VcpClient
-                if (PluginInstance.Main.Connections.TryGetValue(config.ConnectionName, out VcpClient client))
+                if (PluginInstance.Main.Connections.TryGetValue(config.ConnectionName, out VcpClient? client))
                 {
-                    // 2. Build and send the command (this part was correct)
                     string command = $"SET:{config.MonitorPnP_ID}:{config.VcpCode}:{config.VcpValue}";
                     _ = client.SendCommandAsync(command);
 
-                    // --- 3. NEW "Optimistic Update" Logic ---
                     try
                     {
-                        // We must find the *correct* variable name from our in-memory list
-                        // based on the action's saved config.
-
-                        string connectionSlug = PluginInstance.Main.Slugify(config.ConnectionName);
+                        string connectionSlug = Main.Slugify(config.ConnectionName);
 
                         var variableToUpdate = PluginInstance.Main.ParsedVcpVariables
                             .FirstOrDefault(v =>
@@ -47,48 +57,60 @@ namespace MultiDisplayVCPClient.Actions
 
                         if (variableToUpdate.VariableName != null)
                         {
-                            // We found it! Now update the simple value in Macro Deck.
                             VariableManager.SetValue(
                                 variableToUpdate.VariableName,
                                 config.VcpValue.ToString(),
                                 VariableType.String,
                                 PluginInstance.Main,
-                                false); // 'false' = don't save to DB, it's temporary
-
-                            MacroDeckLogger.Info(PluginInstance.Main, $"SetVcpAction optimistically set {variableToUpdate.VariableName} to {config.VcpValue}");
+                                []);
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        MacroDeckLogger.Error(PluginInstance.Main, $"SetVcpAction failed optimistic update: {ex.Message}");
+                        // Fail silently on optimistic update
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MacroDeckLogger.Error(PluginInstance.Main, $"SetVcpAction Trigger Error: {ex.Message}");
+                // Fail silently on trigger
             }
         }
 
+        /// <summary>
+        /// Returns the user control used to configure this action.
+        /// </summary>
+        /// <param name="actionConfigurator">The Macro Deck action configurator.</param>
+        /// <returns>An instance of the SetVcpActionConfigControl.</returns>
         public override ActionConfigControl GetActionConfigControl(ActionConfigurator actionConfigurator)
         {
             return new SetVcpActionConfigControl(this);
         }
     }
 
-    // --- THIS CLASS IS UPDATED ---
+    /// <summary>
+    /// This class holds the configuration data for the SetVcpAction.
+    /// </summary>
     public class SetVcpActionConfig
     {
-        // ConnectionName is still just the friendly name
+        /// <summary>
+        /// The friendly name of the connection to use (e.g., "Server 1").
+        /// </summary>
         public string ConnectionName { get; set; } = "";
 
-        // This will now store the PnP ID (e.g., "ACR0D1D")
+        /// <summary>
+        /// The PnP Model ID of the target monitor (e.g., "ACR0D1D").
+        /// </summary>
         public string MonitorPnP_ID { get; set; } = "";
 
-        // This will now store the VCP code (e.g., "16" for Brightness)
+        /// <summary>
+        /// The VCP code to set, as a string (e.g., "16" for Brightness).
+        /// </summary>
         public string VcpCode { get; set; } = "";
 
-        // This is the value the user wants to set
+        /// <summary>
+        /// The value to set the VCP feature to.
+        /// </summary>
         public uint VcpValue { get; set; } = 0;
     }
 }

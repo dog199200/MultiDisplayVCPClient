@@ -14,7 +14,6 @@ namespace MultiDisplayVCPClient.GUI
             }
             base.Dispose(disposing);
         }
-
         #region Windows Form Designer generated code
 
         private void InitializeComponent()
@@ -22,18 +21,21 @@ namespace MultiDisplayVCPClient.GUI
             components = new System.ComponentModel.Container();
             toolTip1 = new System.Windows.Forms.ToolTip(components);
             formLayout = new System.Windows.Forms.TableLayoutPanel();
-            repeatingLayout = new System.Windows.Forms.TableLayoutPanel();
-            btnAdd = new ButtonPrimary();
             flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             btnOk = new ButtonPrimary();
-
-            // --- ADD THIS ---
             btnCleanUp = new ButtonPrimary();
-            // --- END ADD ---
+            btnNewConnection = new ButtonPrimary();
+            connectionsPanel = new System.Windows.Forms.FlowLayoutPanel();
+
+            // --- NEW: Add a panel for left-aligned buttons ---
+            leftButtonPanel = new System.Windows.Forms.FlowLayoutPanel();
 
             formLayout.SuspendLayout();
-            repeatingLayout.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
+
+            // --- NEW: Add leftButtonPanel ---
+            leftButtonPanel.SuspendLayout();
+
             SuspendLayout();
             // 
             // toolTip1
@@ -46,87 +48,56 @@ namespace MultiDisplayVCPClient.GUI
             // 
             // formLayout
             // 
-            formLayout.AutoSize = true;
-            formLayout.ColumnCount = 1;
+            // --- MODIFIED: Changed to 2 columns ---
+            formLayout.ColumnCount = 2;
             formLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            formLayout.Controls.Add(repeatingLayout, 0, 0);
-            formLayout.Controls.Add(btnAdd, 0, 1);
-            formLayout.Controls.Add(flowLayoutPanel1, 0, 2);
+            formLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
+            // --- END MODIFICATION ---
+
+            formLayout.Controls.Add(flowLayoutPanel1, 1, 1);
+            formLayout.Controls.Add(connectionsPanel, 0, 0);
+
+            // --- NEW: Add leftButtonPanel to (0,1) ---
+            formLayout.Controls.Add(leftButtonPanel, 0, 1);
+
+            // --- MODIFIED: Make connectionsPanel span 2 columns ---
+            formLayout.SetColumnSpan(connectionsPanel, 2);
+            // --- END MODIFICATION ---
+
             formLayout.Dock = System.Windows.Forms.DockStyle.Fill;
             formLayout.Location = new System.Drawing.Point(1, 1);
-            formLayout.MaximumSize = new System.Drawing.Size(0, 600);
             formLayout.Name = "formLayout";
-            formLayout.RowCount = 3;
-            formLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F)); // Row 0
-            formLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));  // Row 1
-            formLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));  // Row 2
+            formLayout.RowCount = 2;
+            formLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            formLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+            formLayout.Size = new System.Drawing.Size(480, 398);
             formLayout.TabIndex = 7;
-            // 
-            // repeatingLayout
-            // 
-            repeatingLayout.AutoScroll = true;
-            repeatingLayout.AutoSize = true;
-            repeatingLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            repeatingLayout.ColumnCount = 2;
-            repeatingLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            repeatingLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 107F));
-            repeatingLayout.Dock = System.Windows.Forms.DockStyle.Top;
-            repeatingLayout.Location = new System.Drawing.Point(3, 3); // Changed Location
-            repeatingLayout.MaximumSize = new System.Drawing.Size(0, 600);
-            repeatingLayout.Name = "repeatingLayout";
-            repeatingLayout.Padding = new System.Windows.Forms.Padding(3);
-            repeatingLayout.RowCount = 0;
-            repeatingLayout.TabIndex = 7;
-            repeatingLayout.CellPaint += RepeatingLayout_CellPaint;
-            // 
-            // btnAdd
-            // 
-            btnAdd.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            btnAdd.BorderRadius = 8;
-            btnAdd.Cursor = System.Windows.Forms.Cursors.Hand;
-            btnAdd.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnAdd.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            btnAdd.ForeColor = System.Drawing.Color.White;
-            btnAdd.HoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(89)))), ((int)(((byte)(184)))));
-            btnAdd.Icon = null;
-            btnAdd.Location = new System.Drawing.Point(382, 321); // Location will be auto-managed by layout
-            btnAdd.Name = "btnAdd";
-            btnAdd.Progress = 0;
-            btnAdd.ProgressColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(46)))), ((int)(((byte)(94)))));
-            btnAdd.Size = new System.Drawing.Size(95, 25);
-            btnAdd.TabIndex = 8;
-            btnAdd.Text = "+";
-            btnAdd.UseVisualStyleBackColor = false;
-            btnAdd.UseWindowsAccentColor = true;
-            btnAdd.Click += BtnAdd_Click;
             // 
             // flowLayoutPanel1
             // 
-            // --- MODIFICATION: Added btnCleanUp ---
+            // --- MODIFIED: Only contains OK button ---
             flowLayoutPanel1.Controls.Add(btnOk);
-            flowLayoutPanel1.Controls.Add(btnCleanUp);
-            // --- END MODIFICATION ---
             flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            flowLayoutPanel1.Location = new System.Drawing.Point(3, 361); // Location will be auto-managed
+            flowLayoutPanel1.Location = new System.Drawing.Point(394, 361);
             flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new System.Drawing.Size(474, 34);
+            flowLayoutPanel1.Size = new System.Drawing.Size(83, 34);
             flowLayoutPanel1.TabIndex = 11;
             // 
             // btnOk
             // 
-            btnOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            btnOk.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
             btnOk.BorderRadius = 8;
             btnOk.Cursor = System.Windows.Forms.Cursors.Hand;
             btnOk.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             btnOk.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             btnOk.ForeColor = System.Drawing.Color.White;
-            btnOk.HoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(89)))), ((int)(((byte)(184)))));
+            btnOk.HoverColor = System.Drawing.Color.FromArgb(0, 89, 184);
             btnOk.Icon = null;
-            btnOk.Location = new System.Drawing.Point(396, 3);
+            btnOk.Location = new System.Drawing.Point(5, 3);
             btnOk.Name = "btnOk";
             btnOk.Progress = 0;
-            btnOk.ProgressColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(46)))), ((int)(((byte)(94)))));
+            btnOk.ProgressColor = System.Drawing.Color.FromArgb(0, 46, 94);
             btnOk.Size = new System.Drawing.Size(75, 25);
             btnOk.TabIndex = 7;
             btnOk.Text = "Ok";
@@ -134,62 +105,100 @@ namespace MultiDisplayVCPClient.GUI
             btnOk.UseWindowsAccentColor = true;
             btnOk.Click += BtnOk_Click;
             // 
-            // --- ADD THIS ---
             // btnCleanUp
             // 
-            btnCleanUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            btnCleanUp.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
             btnCleanUp.BorderRadius = 8;
             btnCleanUp.Cursor = System.Windows.Forms.Cursors.Hand;
             btnCleanUp.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             btnCleanUp.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             btnCleanUp.ForeColor = System.Drawing.Color.White;
-            btnCleanUp.HoverColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(89)))), ((int)(((byte)(184)))));
+            btnCleanUp.HoverColor = System.Drawing.Color.FromArgb(0, 89, 184);
             btnCleanUp.Icon = null;
-            btnCleanUp.Location = new System.Drawing.Point(265, 3);
+            btnCleanUp.Location = new System.Drawing.Point(3, 3);
             btnCleanUp.Name = "btnCleanUp";
             btnCleanUp.Progress = 0;
-            btnCleanUp.ProgressColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(46)))), ((int)(((byte)(94)))));
+            btnCleanUp.ProgressColor = System.Drawing.Color.FromArgb(0, 46, 94);
             btnCleanUp.Size = new System.Drawing.Size(125, 25);
             btnCleanUp.TabIndex = 8;
             btnCleanUp.Text = "Clean Up Variables";
             btnCleanUp.UseVisualStyleBackColor = false;
-            btnCleanUp.UseWindowsAccentColor = false; // Use a neutral color
+            btnCleanUp.UseWindowsAccentColor = false;
             btnCleanUp.BackColor = System.Drawing.Color.FromArgb(65, 65, 65);
-            // --- END ADD ---
+            // 
+            // btnNewConnection
+            // 
+            btnNewConnection.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            btnNewConnection.BorderRadius = 8;
+            btnNewConnection.Cursor = System.Windows.Forms.Cursors.Hand;
+            btnNewConnection.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnNewConnection.Font = new System.Drawing.Font("Tahoma", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            btnNewConnection.ForeColor = System.Drawing.Color.White;
+            btnNewConnection.HoverColor = System.Drawing.Color.FromArgb(0, 89, 184);
+            btnNewConnection.Icon = null;
+            btnNewConnection.Location = new System.Drawing.Point(134, 3);
+            btnNewConnection.Name = "btnNewConnection";
+            btnNewConnection.Progress = 0;
+            btnNewConnection.ProgressColor = System.Drawing.Color.FromArgb(0, 46, 94);
+            btnNewConnection.Size = new System.Drawing.Size(125, 25);
+            btnNewConnection.TabIndex = 9;
+            btnNewConnection.Text = "New Connection";
+            btnNewConnection.UseVisualStyleBackColor = false;
+            btnNewConnection.UseWindowsAccentColor = true;
+            btnNewConnection.Click += BtnAdd_Click;
+            // 
+            // connectionsPanel
+            // 
+            connectionsPanel.AutoScroll = true;
+            // --- MODIFIED: Span 2 columns ---
+            formLayout.SetColumnSpan(this.connectionsPanel, 2);
+            connectionsPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            connectionsPanel.Location = new System.Drawing.Point(3, 3);
+            connectionsPanel.Name = "connectionsPanel";
+            connectionsPanel.Padding = new System.Windows.Forms.Padding(10);
+            connectionsPanel.Size = new System.Drawing.Size(474, 352);
+            connectionsPanel.TabIndex = 12;
+            // 
+            // --- NEW: leftButtonPanel definition ---
+            // 
+            leftButtonPanel.Controls.Add(btnCleanUp);
+            leftButtonPanel.Controls.Add(btnNewConnection);
+            leftButtonPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            leftButtonPanel.FlowDirection = System.Windows.Forms.FlowDirection.LeftToRight;
+            leftButtonPanel.Location = new System.Drawing.Point(3, 361);
+            leftButtonPanel.Name = "leftButtonPanel";
+            leftButtonPanel.Size = new System.Drawing.Size(385, 34);
+            leftButtonPanel.TabIndex = 13;
             // 
             // PluginConfig
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            AutoScroll = true;
-            AutoScrollMinSize = new System.Drawing.Size(0, 150);
-            AutoSize = true;
             ClientSize = new System.Drawing.Size(482, 400);
             Controls.Add(formLayout);
             Location = new System.Drawing.Point(0, 0);
-            MaximumSize = new System.Drawing.Size(1000, 400);
             Name = "PluginConfig";
             Text = "VCP Server Configuration";
             Controls.SetChildIndex(formLayout, 0);
             formLayout.ResumeLayout(false);
-            formLayout.PerformLayout();
-            repeatingLayout.ResumeLayout(false);
-            repeatingLayout.PerformLayout();
             flowLayoutPanel1.ResumeLayout(false);
+
+            // --- NEW: Add leftButtonPanel ---
+            leftButtonPanel.ResumeLayout(false);
+
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.TableLayoutPanel formLayout;
-        private System.Windows.Forms.TableLayoutPanel repeatingLayout;
-        private ButtonPrimary btnAdd;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private ButtonPrimary btnOk;
-
-        // --- ADD THIS ---
         private ButtonPrimary btnCleanUp;
-        // --- END ADD ---
+        private ButtonPrimary btnNewConnection;
+        private System.Windows.Forms.FlowLayoutPanel connectionsPanel;
+
+        // --- NEW: Add leftButtonPanel ---
+        private System.Windows.Forms.FlowLayoutPanel leftButtonPanel;
     }
 }

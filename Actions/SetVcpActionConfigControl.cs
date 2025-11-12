@@ -1,10 +1,5 @@
 ﻿using MultiDisplayVCPClient.GUI;
 using SuchByte.MacroDeck.GUI.CustomControls;
-using SuchByte.MacroDeck.Logging;
-using SuchByte.MacroDeck.Variables; // --- ADD THIS ---
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 
 namespace MultiDisplayVCPClient.Actions
@@ -12,17 +7,15 @@ namespace MultiDisplayVCPClient.Actions
     public partial class SetVcpActionConfigControl : ActionConfigControl
     {
         private readonly SetVcpAction _action;
-        private SetVcpActionConfig _config;
-        private List<VcpVariable> _allPluginVariables;
+        private SetVcpActionConfig? _config;
+        private List<VcpVariable>? _allPluginVariables;
 
-        private bool _isLoaded = false;
-        private bool _configLoadedToUI = false;
+        private bool _isLoaded;
+        private bool _configLoadedToUI;
 
-        private DropdownItem _previousConnection;
-        private DropdownItem _previousMonitor;
-        private DropdownItem _previousSetting;
-
-
+        private DropdownItem? _previousConnection;
+        private DropdownItem? _previousMonitor;
+        private DropdownItem? _previousSetting;
 
         public SetVcpActionConfigControl(SetVcpAction action)
         {
@@ -31,28 +24,17 @@ namespace MultiDisplayVCPClient.Actions
             LoadConfig();
         }
 
-        private void SetVcpActionConfigControl_Load(object sender, EventArgs e)
+        private void OnLoad(object? sender, EventArgs e)
         {
-            // 1. Load the saved config object
             LoadConfig();
-
-            // 2. Subscribe to the "data ready" signal
             PluginInstance.Main.OnVariableListChanged += OnVariableListChanged;
 
-            // 3. (SCENARIO 1)
-            // If data is already available when we load...
             if (PluginInstance.Main.ParsedVcpVariables.Count > 0)
             {
-                // Enable the dropdown
                 comboConnections.Enabled = true;
-
-                // --- ADD THIS ---
-                // And load the saved data right now
                 LoadConfigData();
-                // --- END ADD ---
             }
 
-            // 4. Mark the control as loaded
             _isLoaded = true;
         }
 
@@ -67,70 +49,50 @@ namespace MultiDisplayVCPClient.Actions
         {
             try
             {
-                _config = JsonSerializer.Deserialize<SetVcpActionConfig>(_action.Configuration);
+                if (!string.IsNullOrEmpty(_action.Configuration))
+                {
+                    _config = JsonSerializer.Deserialize<SetVcpActionConfig>(_action.Configuration);
+                }
             }
             catch { }
 
-            if (_config == null)
-            {
-                _config = new SetVcpActionConfig();
-            }
+            _config ??= new SetVcpActionConfig();
         }
 
-        /// <summary>
-        /// This method loads the saved config values into the UI controls.
-        /// It's designed to only run once.
-        /// </summary>
         private void LoadConfigData()
         {
-            // If we've already run this, don't do it again.
             if (_configLoadedToUI) return;
 
-            // 1. Get the fresh data from Main
             _allPluginVariables = PluginInstance.Main.ParsedVcpVariables;
-
-            // --- THIS IS THE FIX ---
-            // 2. Populate the connections dropdown *before* loading values
             PopulateConnections();
-            // --- END FIX ---
-
-            // 3. This is the original method that now populates all
-            //    child dropdowns and sets the saved values.
             LoadControlValues();
 
-            // 4. Mark that we've finished.
             _configLoadedToUI = true;
         }
 
         private bool SaveConfig()
         {
-            var selectedConnection = comboConnections.SelectedItem as DropdownItem;
-            var selectedMonitor = comboMonitors.SelectedItem as DropdownItem;
-            var selectedSetting = comboSettings.SelectedItem as DropdownItem;
+            if (_config == null) return false;
 
-            // --- Save logic ---
-            _config.ConnectionName = selectedConnection?.Text ?? "";
-            _config.MonitorPnP_ID = selectedMonitor?.Value ?? "";
-            _config.VcpCode = selectedSetting?.Value ?? "";
+            _config.ConnectionName = (comboConnections.SelectedItem as DropdownItem)?.Text ?? "";
+            _config.MonitorPnP_ID = (comboMonitors.SelectedItem as DropdownItem)?.Value ?? "";
+            _config.VcpCode = (comboSettings.SelectedItem as DropdownItem)?.Value ?? "";
             _config.VcpValue = (uint)numericValue.Value;
 
             _action.Configuration = JsonSerializer.Serialize(_config);
-
-            // --- Summary logic ---
-            _action.ConfigurationSummary = $"{_config.ConnectionName} | {selectedMonitor?.Text ?? "..."} | {selectedSetting?.Text ?? "..."}: {_config.VcpValue}";
+            _action.ConfigurationSummary = $"{_config.ConnectionName} | {(comboMonitors.SelectedItem as DropdownItem)?.Text ?? "..."} | {(comboSettings.SelectedItem as DropdownItem)?.Text ?? "..."}: {_config.VcpValue}";
 
             return true;
         }
 
-        // This loads the dropdowns based on saved config
         private void LoadControlValues()
         {
-            // --- Unhook events to prevent cascade-firing ---
-            comboConnections.SelectedIndexChanged -= comboConnections_SelectedIndexChanged;
-            comboMonitors.SelectedIndexChanged -= comboMonitors_SelectedIndexChanged;
-            comboSettings.SelectedIndexChanged -= comboSettings_SelectedIndexChanged;
+            if (_config == null) return;
 
-            // 1. Select Connection
+            comboConnections.SelectedIndexChanged -= OnConnectionSelected;
+            comboMonitors.SelectedIndexChanged -= OnMonitorSelected;
+            comboSettings.SelectedIndexChanged -= OnSettingSelected;
+
             if (!string.IsNullOrEmpty(_config.ConnectionName))
             {
                 var item = comboConnections.Items.Cast<DropdownItem>().FirstOrDefault(x => x.Text == _config.ConnectionName);
@@ -140,8 +102,7 @@ namespace MultiDisplayVCPClient.Actions
                 }
             }
 
-            // 2. Select Monitor (which populates settings)
-            PopulateMonitors(); // This needs to run to populate the next dropdown
+            PopulateMonitors();
             if (!string.IsNullOrEmpty(_config.MonitorPnP_ID))
             {
                 var item = comboMonitors.Items.Cast<DropdownItem>().FirstOrDefault(x => x.Value == _config.MonitorPnP_ID);
@@ -151,8 +112,7 @@ namespace MultiDisplayVCPClient.Actions
                 }
             }
 
-            // 3. Select Setting (which populates value box)
-            PopulateSettings(); // This needs to run to populate the next dropdown
+            PopulateSettings();
             if (!string.IsNullOrEmpty(_config.VcpCode))
             {
                 var item = comboSettings.Items.Cast<DropdownItem>().FirstOrDefault(x => x.Value == _config.VcpCode);
@@ -162,10 +122,8 @@ namespace MultiDisplayVCPClient.Actions
                 }
             }
 
-            // This will set the min/max/enabled state
             PopulateValue();
 
-            // 4. Set Value
             if (!string.IsNullOrEmpty(_config.ConnectionName) &&
                 !string.IsNullOrEmpty(_config.MonitorPnP_ID) &&
                 !string.IsNullOrEmpty(_config.VcpCode))
@@ -177,59 +135,41 @@ namespace MultiDisplayVCPClient.Actions
                 numericValue.Value = 0;
             }
 
-            // --- Re-hook events ---
-            comboConnections.SelectedIndexChanged += comboConnections_SelectedIndexChanged;
-            comboMonitors.SelectedIndexChanged += comboMonitors_SelectedIndexChanged;
-            comboSettings.SelectedIndexChanged += comboSettings_SelectedIndexChanged;
+            comboConnections.SelectedIndexChanged += OnConnectionSelected;
+            comboMonitors.SelectedIndexChanged += OnMonitorSelected;
+            comboSettings.SelectedIndexChanged += OnSettingSelected;
         }
 
         #endregion
 
         #region Dropdown Population
 
-        private void OnVariableListChanged(object sender, EventArgs e)
+        private void OnVariableListChanged(object? sender, EventArgs e)
         {
-            // This is the "check logic" from Main.cs
-            // Its ONLY job is to enable the dropdown.
             if (!_isLoaded || this.IsDisposed) return;
 
-            this.InvokeIfRequired(() => {
-                // (SCENARIO 2)
-                // Data just became available.
-
-                // Enable the dropdown
+            this.InvokeIfRequired(() =>
+            {
                 comboConnections.Enabled = true;
-
-                // --- ADD THIS ---
-                // And load the saved data right now
                 LoadConfigData();
-                // --- END ADD ---
             });
         }
 
         private void PopulateConnections()
         {
             comboConnections.Items.Clear();
-
-            // Get the pre-built list directly from Main
             var connectionItems = PluginInstance.Main.GetConnectionDropdownItems();
-
-            // Add them all to the combo box
-            comboConnections.Items.AddRange(connectionItems.ToArray());
+            comboConnections.Items.AddRange([.. connectionItems]);
         }
 
         private void PopulateMonitors()
         {
             comboMonitors.Items.Clear();
-            // --- "..." item REMOVED ---
             comboMonitors.Enabled = false;
 
-            var selectedConnection = comboConnections.SelectedItem as DropdownItem;
-            // --- Revert check: just check for null ---
-            if (selectedConnection == null) return;
+            if (_allPluginVariables == null ||
+                comboConnections.SelectedItem is not DropdownItem selectedConnection) return;
 
-
-            // Find all unique Monitors for *this* connection
             var monitors = _allPluginVariables
                 .Where(v => v.ConnectionSlug == selectedConnection.Value)
                 .Select(v => new { v.PnP_ID, v.Data.MonitorName })
@@ -241,7 +181,7 @@ namespace MultiDisplayVCPClient.Actions
                 comboMonitors.Items.Add(new DropdownItem { Text = monitor.MonitorName, Value = monitor.PnP_ID });
             }
 
-            if (comboMonitors.Items.Count > 0) // --- Revert check to > 0 ---
+            if (comboMonitors.Items.Count > 0)
             {
                 comboMonitors.Enabled = true;
             }
@@ -250,17 +190,12 @@ namespace MultiDisplayVCPClient.Actions
         private void PopulateSettings()
         {
             comboSettings.Items.Clear();
-            // --- "..." item REMOVED ---
             comboSettings.Enabled = false;
 
-            var selectedConnection = comboConnections.SelectedItem as DropdownItem;
-            var selectedMonitor = comboMonitors.SelectedItem as DropdownItem;
+            if (_allPluginVariables == null ||
+                comboConnections.SelectedItem is not DropdownItem selectedConnection ||
+                comboMonitors.SelectedItem is not DropdownItem selectedMonitor) return;
 
-            // --- Revert check: just check for null ---
-            if (selectedConnection == null || selectedMonitor == null) return;
-
-
-            // Find all unique VCP features for *this* monitor
             var settings = _allPluginVariables
                 .Where(v => v.ConnectionSlug == selectedConnection.Value && v.PnP_ID == selectedMonitor.Value)
                 .Select(v => new { v.VcpCode, v.Data.FeatureName, v.Data.Max })
@@ -272,7 +207,7 @@ namespace MultiDisplayVCPClient.Actions
                 comboSettings.Items.Add(new DropdownItem { Text = setting.FeatureName, Value = setting.VcpCode.ToString() });
             }
 
-            if (comboSettings.Items.Count > 0) // --- Revert check to > 0 ---
+            if (comboSettings.Items.Count > 0)
             {
                 comboSettings.Enabled = true;
             }
@@ -284,14 +219,11 @@ namespace MultiDisplayVCPClient.Actions
             numericValue.Minimum = 0;
             numericValue.Maximum = 0;
 
-            var selectedConnection = comboConnections.SelectedItem as DropdownItem;
-            var selectedMonitor = comboMonitors.SelectedItem as DropdownItem;
-            var selectedSetting = comboSettings.SelectedItem as DropdownItem;
+            if (_allPluginVariables == null ||
+                comboConnections.SelectedItem is not DropdownItem selectedConnection ||
+                comboMonitors.SelectedItem is not DropdownItem selectedMonitor ||
+                comboSettings.SelectedItem is not DropdownItem selectedSetting) return;
 
-            // --- Revert check: just check for null ---
-            if (selectedConnection == null || selectedMonitor == null || selectedSetting == null) return;
-
-            // Find the *one* variable that matches all three
             var variable = _allPluginVariables
                 .FirstOrDefault(v => v.ConnectionSlug == selectedConnection.Value &&
                                      v.PnP_ID == selectedMonitor.Value &&
@@ -308,19 +240,13 @@ namespace MultiDisplayVCPClient.Actions
         #endregion
 
         #region Dropdown Enter Events
-        private void comboConnections_Enter(object sender, EventArgs e)
+        private void OnConnectionsEnter(object? sender, EventArgs e)
         {
             _previousConnection = comboConnections.SelectedItem as DropdownItem;
-            // 1. Get FRESH data from Main every time
             _allPluginVariables = PluginInstance.Main.ParsedVcpVariables;
-
-            // 2. Save current selection
-            string currentValue = (comboConnections.SelectedItem as DropdownItem)?.Value;
-
-            // 3. Repopulate (this also clears)
+            string? currentValue = (comboConnections.SelectedItem as DropdownItem)?.Value;
             PopulateConnections();
 
-            // 4. Restore selection
             if (currentValue != null)
             {
                 var itemToRestore = comboConnections.Items.Cast<DropdownItem>().FirstOrDefault(x => x.Value == currentValue);
@@ -331,19 +257,13 @@ namespace MultiDisplayVCPClient.Actions
             }
         }
 
-        private void comboMonitors_Enter(object sender, EventArgs e)
+        private void OnMonitorsEnter(object? sender, EventArgs e)
         {
             _previousMonitor = comboMonitors.SelectedItem as DropdownItem;
-            // 1. Get FRESH data from Main
             _allPluginVariables = PluginInstance.Main.ParsedVcpVariables;
-
-            // 2. Save current selection
-            string currentValue = (comboMonitors.SelectedItem as DropdownItem)?.Value;
-
-            // 3. Repopulate (based on selected connection)
+            string? currentValue = (comboMonitors.SelectedItem as DropdownItem)?.Value;
             PopulateMonitors();
 
-            // 4. Restore selection
             if (currentValue != null)
             {
                 var itemToRestore = comboMonitors.Items.Cast<DropdownItem>().FirstOrDefault(x => x.Value == currentValue);
@@ -354,19 +274,13 @@ namespace MultiDisplayVCPClient.Actions
             }
         }
 
-        private void comboSettings_Enter(object sender, EventArgs e)
+        private void OnSettingsEnter(object? sender, EventArgs e)
         {
             _previousSetting = comboSettings.SelectedItem as DropdownItem;
-            // 1. Get FRESH data from Main
             _allPluginVariables = PluginInstance.Main.ParsedVcpVariables;
-
-            // 2. Save current selection
-            string currentValue = (comboSettings.SelectedItem as DropdownItem)?.Value;
-
-            // 3. Repopulate (based on selected monitor)
+            string? currentValue = (comboSettings.SelectedItem as DropdownItem)?.Value;
             PopulateSettings();
 
-            // 4. Restore selection
             if (currentValue != null)
             {
                 var itemToRestore = comboSettings.Items.Cast<DropdownItem>().FirstOrDefault(x => x.Value == currentValue);
@@ -379,83 +293,66 @@ namespace MultiDisplayVCPClient.Actions
         #endregion
 
 
-        #region Dropdown Events
-        private void comboConnections_SelectedIndexChanged(object sender, EventArgs e)
+        #region Dropdown Changed Events
+        private void OnConnectionSelected(object? sender, EventArgs e)
         {
-            var currentConnection = comboConnections.SelectedItem as DropdownItem;
-            if (currentConnection == _previousConnection)
+            if (comboConnections.SelectedItem is DropdownItem currentConnection &&
+                currentConnection == _previousConnection)
             {
                 return;
             }
-            // --- End Check ---
 
-            // --- Clear children ---
             comboMonitors.Items.Clear();
             comboSettings.Items.Clear();
             numericValue.Value = 0;
             numericValue.Enabled = false;
 
             PopulateMonitors();
-            SaveConfig(); // Save partial config
+            SaveConfig();
         }
 
-        private void comboMonitors_SelectedIndexChanged(object sender, EventArgs e)
+        private void OnMonitorSelected(object? sender, EventArgs e)
         {
-            var currentMonitor = comboMonitors.SelectedItem as DropdownItem;
-            if (currentMonitor == _previousMonitor)
+            if (comboMonitors.SelectedItem is DropdownItem currentMonitor &&
+                currentMonitor == _previousMonitor)
             {
                 return;
             }
-            // --- End Check ---
 
-            // --- Clear children ---
             comboSettings.Items.Clear();
             numericValue.Value = 0;
             numericValue.Enabled = false;
 
             PopulateSettings();
-            SaveConfig(); // Save partial config
-
-        }
-
-        private void comboSettings_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var currentSetting = comboSettings.SelectedItem as DropdownItem;
-            if (currentSetting == _previousSetting)
-            {
-                return;
-            }
-            // --- End Check ---
-
-            // --- Clear children ---
-            numericValue.Value = 0; // Default to 0 for a new selection
-
-            PopulateValue();
-            SaveConfig(); // Save partial config
-        }
-
-
-        private void Value_Changed(object sender, EventArgs e)
-        {
-            // This is the only one that doesn't need to repopulate children
             SaveConfig();
         }
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        private void OnSettingSelected(object? sender, EventArgs e)
+        {
+            if (comboSettings.SelectedItem is DropdownItem currentSetting &&
+                currentSetting == _previousSetting)
+            {
+                return;
+            }
+
+            numericValue.Value = 0;
+            PopulateValue();
+            SaveConfig();
+        }
+
+
+        private void OnValueChanged(object? sender, EventArgs e)
+        {
+            SaveConfig();
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                // Unsubscribe from the event to prevent memory leaks
                 PluginInstance.Main.OnVariableListChanged -= OnVariableListChanged;
 
-                if (components != null)
-                {
-                    components.Dispose();
-                }
+                components?.Dispose();
             }
             base.Dispose(disposing);
         }

@@ -1,186 +1,176 @@
 ﻿using SuchByte.MacroDeck.GUI.CustomControls;
 using SuchByte.MacroDeck.Language;
-using SuchByte.MacroDeck.Logging;
-
 using SuchByte.MacroDeck.Plugins;
-
-// ... existing using statements ...
 using SuchByte.MacroDeck.Variables;
-using System.Text.RegularExpressions;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace MultiDisplayVCPClient.GUI
 {
     public partial class PluginConfig : DialogForm
     {
-        private readonly List<string> _originalConnectionNames;
-
         public PluginConfig()
         {
             InitializeComponent();
 
             btnOk.Text = LanguageManager.Strings.Ok;
-
             btnCleanUp.Click += BtnCleanUp_Click;
-
-            MacroDeckLogger.Info(PluginInstance.Main, "PluginConfig window loading...");
-
-            _originalConnectionNames = PluginInstance.Main.Connections.Keys.ToList();
 
             LoadCredentials();
         }
 
+        /// <summary>
+        /// Loads credentials and populates the grid with ConnectionIconControls.
+        /// </summary>
         private void LoadCredentials()
         {
-            try
+            connectionsPanel.Controls.Clear();
+            List<Dictionary<string, string>>? credentials = PluginCredentials.GetPluginCredentials(PluginInstance.Main);
+
+            if (credentials == null || credentials.Count == 0) return;
+
+            foreach (Dictionary<string, string> creds in credentials)
             {
-                List<Dictionary<string, string>> credentials = PluginCredentials.GetPluginCredentials(PluginInstance.Main);
-                MacroDeckLogger.Info(PluginInstance.Main, $"Found {credentials.Count} saved credentials.");
-                if (credentials != null && credentials.Count > 0)
-                {
-                    foreach (Dictionary<string, string> creds in credentials)
-                    {
-                        AddRow(creds);
-                    }
-                }
-                else
-                {
-                    MacroDeckLogger.Info(PluginInstance.Main, "No credentials found, adding one blank row.");
-                    AddRow(null);
-                }
-            }
-            catch (Exception ex)
-            {
-                MacroDeckLogger.Error(PluginInstance.Main, $"Error loading credentials: {ex.Message}\n{ex.StackTrace}");
+                CreateConnectionIcon(creds);
             }
         }
 
-        private async void BtnOk_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Creates a new ConnectionIconControl, wires up its events, and adds it to the panel.
+        /// </summary>
+        private void CreateConnectionIcon(Dictionary<string, string>? settings)
         {
-            MacroDeckLogger.Info(PluginInstance.Main, "OK button clicked. Saving credentials...");
+            if (settings == null) return;
+
+            var iconControl = new ConnectionIconControl
+            {
+                Settings = settings
+            };
+
+            // Wire up events
+            iconControl.EditClicked += OnEditConnection;
+            iconControl.DeleteClicked += OnDeleteConnection;
+
+            // Check if this connection is currently active to set the icon
+            if (settings.TryGetValue("name", out var name) &&
+                PluginInstance.Main.Connections.TryGetValue(name, out var client) &&
+                client.State == ConnectionState.Connected)
+            {
+                iconControl.SetOnlineStatus(true);
+            }
+            else
+            {
+                iconControl.SetOnlineStatus(false);
+            }
+
+            connectionsPanel.Controls.Add(iconControl);
+        }
+
+        /// <summary>
+        /// Handles the click event for the 'Ok' button (Save and Close).
+        /// </summary>
+        private void BtnOk_Click(object? sender, EventArgs e)
+        {
             try
             {
                 var newCredentials = new List<Dictionary<string, string>>();
                 var newConnectionNames = new List<string>();
+                var originalConnectionNames = PluginInstance.Main.Connections.Keys.ToList();
 
-                foreach (Control control in repeatingLayout.Controls)
+                // Loop over the new icon controls to get their settings
+                foreach (ConnectionIconControl iconControl in connectionsPanel.Controls)
                 {
-                    if (control is VcpConnectionConfigurator config)
+                    if (iconControl.Settings != null)
                     {
-                        var settings = config.Settings;
-                        if (settings.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
+                        newCredentials.Add(iconControl.Settings);
+                        if (iconControl.Settings.TryGetValue("name", out var name))
                         {
                             newConnectionNames.Add(name);
-                            newCredentials.Add(settings);
                         }
                     }
                 }
 
-                // 1. Save all the new/remaining credentials
+                // Save the new credential list
                 PluginCredentials.DeletePluginCredentials(PluginInstance.Main);
                 foreach (var creds in newCredentials)
                 {
                     PluginCredentials.AddCredentials(PluginInstance.Main, creds);
                 }
-                MacroDeckLogger.Info(PluginInstance.Main, $"Saved {newCredentials.Count} credentials.");
 
-                // 2. Find and delete data for removed connections
-                var removedConnectionNames = _originalConnectionNames.Except(newConnectionNames).ToList();
+                // Find any connections that were deleted
+                var removedConnectionNames = originalConnectionNames.Except(newConnectionNames).ToList();
                 foreach (var removedName in removedConnectionNames)
                 {
-                    MacroDeckLogger.Info(PluginInstance.Main, $"Connection '{removedName}' was removed. Deleting data...");
-                    _ = PluginInstance.Main.RemoveConnectionData(removedName);
+                    PluginInstance.Main.RemoveConnectionData(removedName);
                 }
 
-                // 3. Reload all connections in the main plugin
-                await PluginInstance.Main.SetupAndStartAsync();
+                // Reload all connections
+                PluginInstance.Main.SetupAndStart();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MacroDeckLogger.Error(PluginInstance.Main, $"Error saving credentials: {ex.Message + Environment.NewLine + ex.StackTrace} ");
+                // Fail silently
             }
 
             this.Close();
         }
 
-
-        // --- THIS IS THE CORRECTED LOGIC ---
-        private void BtnCleanUp_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the click event for the 'Clean Up Variables' button.
+        /// </summary>
+        private void BtnCleanUp_Click(object? sender, EventArgs e)
         {
-            MacroDeckLogger.Info(PluginInstance.Main, "Clean Up Variables button clicked.");
-
-            // 1. Get all variables created by this plugin
             var allPluginVariables = VariableManager.Variables
                 .Where(v => v.Creator == "MultiDisplayVCPClient")
                 .ToList();
 
-            // --- Logging ---
-            MacroDeckLogger.Info(PluginInstance.Main, $"--- Found {allPluginVariables.Count} variables created by this plugin ---");
-            foreach (var variable in allPluginVariables)
-            {
-                MacroDeckLogger.Info(PluginInstance.Main, $"Found variable: {variable.Name} (Creator: {variable.Creator})");
-            }
-            // --- End Logging ---
-
-            if (!allPluginVariables.Any())
+            if (allPluginVariables.Count == 0)
             {
                 System.Windows.Forms.MessageBox.Show("No variables found for this plugin.", "Clean Up", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // 2. Get all *currently configured* connection slugs (e.g., "server_1")
+            // Get active connection slugs from the current UI state
             var activeConnectionSlugs = new HashSet<string>();
-            foreach (Control control in repeatingLayout.Controls)
+            foreach (ConnectionIconControl iconControl in connectionsPanel.Controls)
             {
-                if (control is VcpConnectionConfigurator config)
+                if (iconControl.Settings != null && iconControl.Settings.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
                 {
-                    if (config.Settings.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
-                    {
-                        string slug = PluginInstance.Main.Slugify(name);
-                        activeConnectionSlugs.Add(slug);
-                        MacroDeckLogger.Info(PluginInstance.Main, $"Found active connection slug: {slug}");
-                    }
+                    string slug = Main.Slugify(name);
+                    activeConnectionSlugs.Add(slug);
                 }
             }
-            MacroDeckLogger.Info(PluginInstance.Main, $"Found {activeConnectionSlugs.Count} active connection slugs in config.");
 
-            // 3. Find variables to delete (orphans OR legacy)
             var variablesToDelete = new List<Variable>();
             const string prefix = "mdc_";
 
             foreach (var variable in allPluginVariables)
             {
                 bool isModernAndSafe = false;
-
-                // Check against all active connection slugs
                 foreach (var slug in activeConnectionSlugs)
                 {
                     string newPrefix = prefix + slug + "_";
-
-                    // Check for NEW format: "mdc_server_1_..."
                     if (variable.Name.StartsWith(newPrefix))
                     {
                         isModernAndSafe = true;
                         break;
                     }
                 }
-
-                // 4. If it's NOT in the new, safe format, it's an orphan or legacy. Delete it.
                 if (!isModernAndSafe)
                 {
                     variablesToDelete.Add(variable);
                 }
             }
 
-            // 5. Delete the variables
-            if (variablesToDelete.Any())
+            if (variablesToDelete.Count > 0)
             {
-                MacroDeckLogger.Info(PluginInstance.Main, $"Found {variablesToDelete.Count} orphaned or legacy variables to delete.");
                 foreach (var orphan in variablesToDelete)
                 {
-                    MacroDeckLogger.Info(PluginInstance.Main, $"Deleting: {orphan.Name}");
                     VariableManager.DeleteVariable(orphan.Name);
                 }
-
                 System.Windows.Forms.MessageBox.Show($"Clean up complete. Removed {variablesToDelete.Count} orphaned/legacy variables.", "Clean Up Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
@@ -188,67 +178,52 @@ namespace MultiDisplayVCPClient.GUI
                 System.Windows.Forms.MessageBox.Show("No orphaned or legacy variables found. All variables are up to date.", "Clean Up Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
-        // --- END CORRECTED LOGIC ---
 
-
-        private void AddRow(Dictionary<string, string> settings)
+        /// <summary>
+        /// Handles the click event for the 'New Connection' button.
+        /// </summary>
+        private void BtnAdd_Click(object? sender, EventArgs e)
         {
-            try
+            // Open the editor with null settings to create a new connection
+            using var editor = new ConnectionEditorForm(null);
+            if (editor.ShowDialog() == DialogResult.OK)
             {
-                repeatingLayout.RowCount++;
-                repeatingLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+                // Create a new icon with the settings from the editor
+                CreateConnectionIcon(editor.Settings);
+            }
+        }
 
-                var elm = new VcpConnectionConfigurator();
-                elm.Settings = settings;
-                elm.Dock = DockStyle.Fill;
-                elm.Margin = new Padding(13);
-                repeatingLayout.Controls.Add(elm, 0, repeatingLayout.RowCount - 1);
-
-                var btnRemove = new Button
+        /// <summary>
+        /// Handles the 'Delete' event from a ConnectionIconControl.
+        /// </summary>
+        private void OnDeleteConnection(object? sender, EventArgs e)
+        {
+            if (sender is ConnectionIconControl iconControl)
+            {
+                var result = System.Windows.Forms.MessageBox.Show($"Are you sure you want to delete '{iconControl.Settings?["name"]}'?", "Delete Connection", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
                 {
-                    Text = "-",
-                    Dock = DockStyle.Top,
-                    BackColor = Color.Maroon,
-                    Margin = new Padding(13),
-                };
-                btnRemove.Click += BtnRemove_Click;
-                repeatingLayout.Controls.Add(btnRemove, 1, repeatingLayout.RowCount - 1);
-
-                string connectionName = settings?["name"] ?? "New Row";
-                MacroDeckLogger.Info(PluginInstance.Main, $"Added connection row to config UI: '{connectionName}'");
-            }
-            catch (Exception ex)
-            {
-                MacroDeckLogger.Error(PluginInstance.Main, $"Error adding row to config UI: {ex.Message + Environment.NewLine + ex.StackTrace} ");
+                    connectionsPanel.Controls.Remove(iconControl);
+                    iconControl.Dispose();
+                }
             }
         }
 
-        private void BtnAdd_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Handles the 'Edit' event from a ConnectionIconControl.
+        /// </summary>
+        private void OnEditConnection(object? sender, EventArgs e)
         {
-            MacroDeckLogger.Info(PluginInstance.Main, "Add row button clicked.");
-            AddRow(null);
-        }
-
-        private void BtnRemove_Click(object sender, EventArgs e)
-        {
-            try
+            if (sender is ConnectionIconControl iconControl)
             {
-                var row = repeatingLayout.GetRow(sender as Control);
-                MacroDeckLogger.Info(PluginInstance.Main, $"Remove row button clicked for row {row}.");
-                TableLayoutHelper.RemoveArbitraryRow(repeatingLayout, row);
+                // Open the editor with this icon's current settings
+                using var editor = new ConnectionEditorForm(iconControl.Settings);
+                if (editor.ShowDialog() == DialogResult.OK)
+                {
+                    // Update the icon's settings with the new ones from the editor
+                    iconControl.Settings = editor.Settings;
+                }
             }
-            catch (Exception ex)
-            {
-                MacroDeckLogger.Error(PluginInstance.Main, $"Error removing row: {ex.Message + Environment.NewLine + ex.StackTrace} ");
-            }
-        }
-
-        private void RepeatingLayout_CellPaint(object sender, TableLayoutCellPaintEventArgs e)
-        {
-            // Draws the separator line
-            var bottomLeft = new Point(e.CellBounds.Left, e.CellBounds.Bottom);
-            var bottomRight = new Point(e.CellBounds.Right, e.CellBounds.Bottom);
-            e.Graphics.DrawLine(Pens.White, bottomLeft, bottomRight);
         }
     }
 }
